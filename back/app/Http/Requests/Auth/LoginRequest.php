@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Auth;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class RegisterRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,16 +26,12 @@ class RegisterRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:25',
-            'lastname' => 'required|string|max:25',
-            'email' => 'required|string|email|max:100|unique:users',
+            'email' => 'required|string|email|max:100',
             'password' => 'required|string|min:8',
-            'phone' => 'required|string|min:9|max:9',
-            'role' => 'required|string|in:owner,admin,delivery_person',
         ];
     }
 
-    /**
+     /**
      * Override the failed validation response to match custom format.
      */
     protected function failedValidation(Validator $validator)
