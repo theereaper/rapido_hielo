@@ -1,4 +1,4 @@
-import { Popconfirm, Space, Table, Tooltip } from "antd";
+import { message, Popconfirm, Space, Table, Tooltip } from "antd";
 import { SectionPrivateHeader } from "../../components/ui/SectionPrivateHeader";
 import { useClients } from "../../services/clients/queries";
 import useTableFilters from "../../hooks/table/useTableFiltersV2";
@@ -16,9 +16,11 @@ import {
   ModalCUClientRef,
 } from "../../components/ui/modals/ModalCUClient";
 import { ClearFiltersIcon } from "../../components/ui/icons/ClearFiltersIcon";
+import { useDeleteClient } from "../../services/clients/mutation";
 
 export default function ClientsPrivate() {
   const modalCURef = useRef<ModalCUClientRef>(null);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const { tableParams, tableKey, resetFilters, handleTableChange } =
     useTableFilters();
@@ -33,6 +35,7 @@ export default function ClientsPrivate() {
       title: "Rut",
       dataIndex: "rut",
       key: "rut",
+      width: 150,
       ...getColumnSearchProps("name"),
     },
     {
@@ -182,23 +185,26 @@ export default function ClientsPrivate() {
     },
   ];
 
+  const deleteClient = useDeleteClient();
+
   const changeStatus = async (key: Client["id"]) => {
-    /* deleteUser.mutate(key, {
+    deleteClient.mutate(key, {
       onSuccess: () => {
         refetch();
         messageApi.success(
-          `El estado del usuario/a se ha cambiado correctamente.`
+          `El estado del cliente se ha cambiado correctamente.`
         );
       },
       // Si salio mal, añades ese item a la cache
       onError: () => {
         messageApi.error("Ups, algo salió mal. Intenta nuevamente.");
       },
-    }); */
+    });
   };
 
   return (
     <>
+      {contextHolder}
       <SectionPrivateHeader
         title="Clientes"
         onButtonClick={() => modalCURef.current?.childFunction()}

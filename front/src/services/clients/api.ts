@@ -12,3 +12,21 @@ export const getClients = async (
   });
   return data;
 };
+
+//store
+export async function createClient(values: Client) {
+  const { data } = await axiosInstance.post(`/api/clients`, values);
+  return data;
+}
+
+//update
+export async function updateClient(values: Client) {
+  const { data } = await axiosInstance.put(`/api/clients/${values.id}`, values);
+  return data;
+}
+
+//delete
+export async function deleteClient(id: Client["id"]) {
+  const { data } = await axiosInstance.patch(`/api/clients/${id}`);
+  return data;
+}

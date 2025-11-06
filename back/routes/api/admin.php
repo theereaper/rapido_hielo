@@ -19,3 +19,7 @@ Route::prefix('clients')->controller(ClientController::class)->group(function ()
     Route::get('/', 'getClients');
     Route::put('/password', 'changePassword');
 });
+
+Route::prefix('products')->controller(ClientController::class)->group(function () {
+    Route::post('/', 'createProduct');
+});

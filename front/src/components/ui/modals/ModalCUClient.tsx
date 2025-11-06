@@ -1,16 +1,28 @@
-import React, { forwardRef, useImperativeHandle, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { Client } from "../../../types/Client";
 import {
   Alert,
   Button,
   Form,
   Input,
+  InputRef,
   message,
   Modal,
   Select,
   Space,
 } from "antd";
 import EmailFormItem from "../form/items/EmailFormItem";
+import {
+  useCreateClient,
+  useUpdateClient,
+} from "../../../services/clients/mutation";
+import RutFormItem from "../form/items/RutFormItem";
 
 export interface ModalCUClientRef {
   childFunction: (id?: string, data?: Client) => void; // Definimos el tipo con parámetros
@@ -28,6 +40,8 @@ export const ModalCUClient = forwardRef<ModalCUClientRef, ModalCUClientProps>(
     const [isEdit, setIsEdit] = useState(false);
     const [isLoadingButton, setIsLoadingButton] = useState(false);
     const [messageApi, contextHolder] = message.useMessage();
+
+    const firstInputRef = useRef<InputRef | null>(null);
 
     const [form] = Form.useForm();
 
@@ -60,8 +74,35 @@ export const ModalCUClient = forwardRef<ModalCUClientRef, ModalCUClientProps>(
       childFunction,
     }));
 
+    useEffect(() => {
+      if (open) {
+        setTimeout(() => {
+          firstInputRef.current?.focus();
+        }, 300);
+      }
+    }, [open]);
+
+    const createClientMutation = useCreateClient();
+    const updateClientMutation = useUpdateClient();
+
+    const handleError = (error: any) => {
+      console.log(error);
+      messageApi.error("Ups, algo salió mal. Intenta nuevamente.");
+      if (error.response?.data?.errors?.email) {
+        setAlert({
+          visible: true,
+          description: "El correo electrónico ya existe, intenta con otro",
+        });
+      } else if (error.response?.data?.errors?.rut) {
+        setAlert({
+          visible: true,
+          description: "El rut ya existe, intenta con otro",
+        });
+      }
+    };
+
     const create = async () => {
-      /*       setIsLoadingButton(true);
+      setIsLoadingButton(true);
       setAlert({
         visible: false,
         description: "",
@@ -69,7 +110,7 @@ export const ModalCUClient = forwardRef<ModalCUClientRef, ModalCUClientProps>(
 
       const formValues = form.getFieldsValue();
 
-      createUserMutation.mutate(formValues as User, {
+      createClientMutation.mutate(formValues as Client, {
         onSuccess: (data) => {
           messageApi.success(data.message);
 
@@ -83,11 +124,11 @@ export const ModalCUClient = forwardRef<ModalCUClientRef, ModalCUClientProps>(
         onSettled: () => {
           setIsLoadingButton(false);
         },
-      }); */
+      });
     };
 
     const update = async () => {
-      /*       setIsLoadingButton(true);
+      setIsLoadingButton(true);
       setAlert({
         visible: false,
         description: "",
@@ -97,7 +138,7 @@ export const ModalCUClient = forwardRef<ModalCUClientRef, ModalCUClientProps>(
       formValues.id = id;
       formValues.key = id;
 
-      updateUserMutation.mutate(formValues as User, {
+      updateClientMutation.mutate(formValues as Client, {
         onSuccess: (data) => {
           messageApi.success(data.message);
           if (props?.refetch) {
@@ -109,7 +150,7 @@ export const ModalCUClient = forwardRef<ModalCUClientRef, ModalCUClientProps>(
         onSettled: () => {
           setIsLoadingButton(false);
         },
-      }); */
+      });
     };
 
     return (
@@ -133,6 +174,8 @@ export const ModalCUClient = forwardRef<ModalCUClientRef, ModalCUClientProps>(
           layout="vertical"
           onFinish={isEdit ? update : create}
         >
+          <RutFormItem form={form} ref={firstInputRef} label="RUN" />
+
           {/* Name y Lastname */}
           <div className="grid grid-cols-1 sm:gap-4 sm:grid-cols-2">
             {/* Name */}

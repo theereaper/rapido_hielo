@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Client\CreateClientRequest;
+use App\Http\Requests\Client\UpdateClientRequest;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\Client;
@@ -14,7 +16,7 @@ class ClientController extends Controller
 {
     use Filterable;
 
-    public function createClient(CreateUserRequest $request)
+    public function createClient(CreateClientRequest $request)
     {
         $password = Str::random(8);
 
@@ -28,14 +30,15 @@ class ClientController extends Controller
         ]);
 
         $client->key = $client->id;
+        $client->status = "active";
 
         return response()->json([
-            'message' => "Usuario creado con éxito",
+            'message' => "Cliente creado con éxito",
             'register' => $client,
         ], 201);
     }
 
-    public function updateClient(UpdateUserRequest $request, $id)
+    public function updateClient(UpdateClientRequest $request, $id)
     {
         $item_exist = Client::where('id', $id)->exists();
 
@@ -64,7 +67,7 @@ class ClientController extends Controller
             'order' => 'nullable|in:asc,desc',
         ]);
 
-        $allowed_filters = ['name', 'lastname', 'role', 'status', 'email'];
+        $allowed_filters = ['rut', 'name', 'lastname', 'role', 'status', 'email'];
 
         if ($request->filled('filters')) {
             foreach (array_keys($request->filters) as $key) {
@@ -86,14 +89,16 @@ class ClientController extends Controller
             ->select([
                 'id',
                 'id as key',
+                'rut',
                 'name',
                 'email',
                 'lastname',
+                'address',
                 'status',
                 'created_at as created_at_show'
             ]);
 
-        $this->applyInFilters($query, $filters, ['status']); // Aplicar filtros whereIn de forma dinámica
+        $this->applyInFilters($query, $filters, ['rut', 'status']); // Aplicar filtros whereIn de forma dinámica
         $this->applyLikeFilters($query, $filters, ['name', 'lastname', 'email']); // Aplicar filtros LIKE de forma dinámica
 
         $paginated_data = $query->orderBy($field, $order)
