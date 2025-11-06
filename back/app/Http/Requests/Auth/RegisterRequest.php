@@ -28,7 +28,7 @@ class RegisterRequest extends FormRequest
             'lastname' => 'required|string|min:2|max:25',
             'email' => 'required|email|max:' . config('limits.email_max_length') . '|unique:users,email',
             'password' => 'required|string|confirmed|min:8|max:20',
-            'role' => 'required|string|in:admin,normal'
+            'role' => 'required|string|in:owner,admin,normal'
         ];
     }
 

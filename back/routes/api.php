@@ -37,9 +37,9 @@ Route::group(['middleware' => ['jwt.verify', 'user.active']], function () {
      * Admin-Only Routes (requires admin role)
      * --------------------------------------------------------
      */
-    /*     Route::group(['middleware' => ['user.admin']], function () {
+    Route::group(['middleware' => ['user.admin']], function () {
         require __DIR__ . '/api/admin.php';
-    }); */
+    });
 
     /**
      * --------------------------------------------------------

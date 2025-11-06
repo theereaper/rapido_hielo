@@ -1,0 +1,16 @@
+IMPORTANTE
+
+Esta aplicación frontend de Vortex POS NO está siendo indexada por los motores de búsqueda.
+
+La intención es que esta aplicación sea utilizada como una app privada. Se está utilizando una landing externa que redirecciona a esta app, y es esa landing la que debe ser indexada para SEO.
+
+¿Cómo se evita la indexación?
+- Todas las páginas tienen configurado el meta tag: <meta name="robots" content="noindex, nofollow">
+- Existe un archivo robots.txt en la carpeta /public que bloquea a todos los bots.
+
+Si deseas permitir la indexación:
+1. Accede al proyecto frontend.
+2. Entra en la carpeta /public.
+3. Elimina el archivo robots.txt (o edítalo para permitir ciertas rutas).
+
+Por defecto, esta aplicación permanecerá fuera del alcance de los buscadores.

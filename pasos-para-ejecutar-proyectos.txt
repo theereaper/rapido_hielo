@@ -1,0 +1,64 @@
+PROYECTO: Vortex POS (Frontend + Backend)
+
+Este proyecto contiene dos partes:
+
+1. FRONTEND → Aplicación en React
+2. BACKEND → API en Laravel
+
+--------------------------------------------------
+REQUISITOS GENERALES:
+- Node.js >= 18
+- PHP >= 8.2
+- Composer
+- MySQL o MariaDB
+- Laravel CLI
+- npm o yarn
+- (Opcional) XAMPP, Laravel Valet, Laragon, etc.
+
+--------------------------------------------------
+🟦 FRONTEND (React)
+
+Ubicación: /front
+
+1. Entrar a la carpeta:
+   cd front
+
+2. Instalar dependencias:
+   npm install
+
+3. Correr el proyecto:
+   npm run dev
+
+4. Por defecto corre en:
+   http://localhost:5173
+
+--------------------------------------------------
+🟥 BACKEND (Laravel)
+
+Ubicación: /backend
+
+1. Entrar a la carpeta:
+   cd backend
+
+2. Copiar el archivo de entorno:
+   cp .env.example .env
+
+3. Configurar tus credenciales de base de datos en `.env`
+
+4. Instalar dependencias:
+   composer install
+
+5. Generar la clave de la app:
+   php artisan key:generate
+
+6. Ejecutar migraciones:
+   php artisan migrate
+
+7. Correr el servidor:
+   php artisan serve
+
+8. Por defecto corre en:
+   http://127.0.0.1:8000
+
+--------------------------------------------------
+¡Listo! Ahora puedes empezar a trabajar en el proyecto 🚀
