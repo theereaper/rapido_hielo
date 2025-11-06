@@ -1,0 +1,7 @@
+El logo debe si o si debe llamarse logo.webp
+
+¿Por que? 
+
+En laravel para los correos se ocupa el dominio del front/logo.webp.
+
+Si se necesita otro nombre, debes modificar el archivo /resources/views/vendor/mail/html/header.blade y modificar la etiqueta img

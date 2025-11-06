@@ -1,0 +1,1 @@
+export const TOKENCAPTCHA = "6LdV-Y4rAAAAAD4E7tj8mL3uW8LzSabR2lKRb-yM";

@@ -107,8 +107,6 @@ class UserController extends Controller
         return response()->json($response, 200);
     }
 
-
-
     public function changeStatusUser($id)
     {
         $user = User::select('id', 'status')->where('id', $id)->first();
