@@ -48,8 +48,8 @@ export const ProtectedRouteUsers = () => {
           {isDesktopSideBar ? <DesktopSideBar /> : <NavBarDashboard />}
 
           {/* CONTENT */}
-          <Content className="mt-[22px] flex flex-col justify-between min-h-screen">
-            <div className="px-6">
+          <Content className="flex flex-col min-h-screen">
+            <div className="flex-grow px-6 mt-[22px]">
               <Suspense
                 fallback={
                   <div className="flex justify-center w-full py-10">
