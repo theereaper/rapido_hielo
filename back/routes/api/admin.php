@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
@@ -20,6 +21,7 @@ Route::prefix('clients')->controller(ClientController::class)->group(function ()
     Route::put('/password', 'changePassword');
 });
 
-Route::prefix('products')->controller(ClientController::class)->group(function () {
+Route::prefix('products')->controller(ProductController::class)->group(function () {
     Route::post('/', 'createProduct');
+    Route::get('/', 'getProducts');
 });

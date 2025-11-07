@@ -1,22 +1,24 @@
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
-import { Product } from "../../../types/Product";
 import {
   Alert,
   Button,
   Form,
   Input,
+  InputNumber,
   InputRef,
   message,
   Modal,
   Space,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
+import { useCreateProduct } from "../../../services/products/mutation";
+import { Product } from "../../../types/Product";
 
 export interface ModalCUProductRef {
   childFunction: (id?: string, data?: Product) => void; // Definimos el tipo con parámetros
@@ -78,8 +80,22 @@ export const ModalCUProduct = forwardRef<
     }
   }, [open]);
 
+  const createProductMutation = useCreateProduct();
+  /* const updateClientMutation = useUpdateClient(); */
+
+  const handleError = (error: any) => {
+    console.log(error);
+    messageApi.error("Ups, algo salió mal. Intenta nuevamente.");
+    if (error.response?.data?.errors?.email) {
+      setAlert({
+        visible: true,
+        description: "El correo electrónico ya existe, intenta con otro",
+      });
+    }
+  };
+
   const create = async () => {
-    /*     setIsLoadingButton(true);
+    setIsLoadingButton(true);
     setAlert({
       visible: false,
       description: "",
@@ -87,7 +103,9 @@ export const ModalCUProduct = forwardRef<
 
     const formValues = form.getFieldsValue();
 
-    createClientMutation.mutate(formValues as Client, {
+    console.log(formValues);
+
+    createProductMutation.mutate(formValues as Product, {
       onSuccess: (data) => {
         messageApi.success(data.message);
 
@@ -101,7 +119,7 @@ export const ModalCUProduct = forwardRef<
       onSettled: () => {
         setIsLoadingButton(false);
       },
-    }); */
+    });
   };
 
   const update = async () => {
@@ -163,13 +181,30 @@ export const ModalCUProduct = forwardRef<
 
         <div className="grid grid-cols-1 sm:gap-4 sm:grid-cols-2">
           {/* Peso */}
-          <Form.Item
-            name="weight"
-            validateTrigger="onBlur"
-            label="Peso"
-            rules={[{ whitespace: true }]}
-          >
-            <Input placeholder="Ingresa peso" />
+          <Form.Item name="weight" validateTrigger="onBlur" label="Peso">
+            <InputNumber
+              type="text"
+              disabled={isEdit && true}
+              maxLength={8}
+              className="w-full"
+              controls={false}
+              inputMode="numeric"
+              placeholder="Ingresa peso"
+              max="99999999"
+              precision={1}
+              min={"0.0"}
+              step={"0.0"}
+              formatter={(value) =>
+                `${value}`
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  .replace(/\./g, (match, offset, fullStr) => {
+                    return fullStr.length - offset > 3 ? "." : ",";
+                  })
+              }
+              parser={(value: any) =>
+                value?.replace(/\$\s?|\./g, "").replace(/,/g, ".")
+              }
+            />
           </Form.Item>
 
           {/* Precio */}
@@ -177,9 +212,28 @@ export const ModalCUProduct = forwardRef<
             name="price"
             validateTrigger="onBlur"
             label="Precio"
-            rules={[{ required: true, min: 2, max: 20, whitespace: true }]}
+            rules={[{ required: true }]}
           >
-            <Input placeholder="Ingresa precio" />
+            <InputNumber
+              addonBefore="$"
+              type="text"
+              min="1"
+              max="99999999"
+              controls={false}
+              className="w-full"
+              maxLength={10}
+              formatter={(value) =>
+                `${value}`
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  .replace(/\./g, (match, offset, fullStr) => {
+                    return fullStr.length - offset > 3 ? "." : ",";
+                  })
+              }
+              parser={(value: any) =>
+                value?.replace(/\$\s?|\./g, "").replace(/,/g, ".")
+              }
+              placeholder="Ingresa precio"
+            />
           </Form.Item>
         </div>
 
@@ -187,7 +241,7 @@ export const ModalCUProduct = forwardRef<
           name="description"
           validateTrigger="onBlur"
           label="Descripción"
-          rules={[{ required: true, max: 20, whitespace: true, min: 2 }]}
+          rules={[{ min: 4, max: 100, whitespace: true }]}
         >
           <TextArea placeholder="Ingresa descripción" />
         </Form.Item>
