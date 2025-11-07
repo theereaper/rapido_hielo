@@ -17,6 +17,7 @@ import { useProducts } from "../../services/products/queries";
 import { Product } from "../../types/Product";
 import { SinDatoBadget } from "../../components/ui/SinDatoBadget";
 import { formatPrice } from "../../helpers/formatPrice";
+import { useDeleteProduct } from "../../services/products/mutation";
 
 export default function ProductsPrivate() {
   const modalCURef = useRef<ModalCUProductRef>(null);
@@ -50,6 +51,13 @@ export default function ProductsPrivate() {
       title: "Peso (Kg)",
       dataIndex: "weight",
       key: "weight",
+      render: (value) => {
+        if (value == null || value === "") return "-";
+        const num = Number(value);
+        if (isNaN(num)) return "-";
+        const fixed = Number(num.toFixed(1));
+        return fixed % 1 === 0 ? fixed.toFixed(0) : fixed.toFixed(1);
+      },
     },
     {
       title: "Precio",
@@ -137,7 +145,7 @@ export default function ProductsPrivate() {
                   }}
                   placement="left"
                   onConfirm={() => {
-                    /* changeStatus(id); */
+                    changeStatus(id);
                   }}
                 >
                   <button>
@@ -164,7 +172,7 @@ export default function ProductsPrivate() {
                     },
                   }}
                   onConfirm={() => {
-                    /* changeStatus(id); */
+                    changeStatus(id);
                   }}
                 >
                   <button>
@@ -179,14 +187,14 @@ export default function ProductsPrivate() {
     },
   ];
 
-  /*   const deleteClient = useDeleteClient();
+  const deleteProduct = useDeleteProduct();
 
-  const changeStatus = async (key: Client["id"]) => {
-    deleteClient.mutate(key, {
+  const changeStatus = async (key: Product["id"]) => {
+    deleteProduct.mutate(key, {
       onSuccess: () => {
         refetch();
         messageApi.success(
-          `El estado del cliente se ha cambiado correctamente.`
+          `El estado del producto se ha cambiado correctamente.`
         );
       },
       // Si salio mal, añades ese item a la cache
@@ -194,7 +202,7 @@ export default function ProductsPrivate() {
         messageApi.error("Ups, algo salió mal. Intenta nuevamente.");
       },
     });
-  }; */
+  };
 
   return (
     <>

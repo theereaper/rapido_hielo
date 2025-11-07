@@ -18,3 +18,18 @@ export async function createProduct(values: Product) {
   const { data } = await axiosInstance.post(`/api/products`, values);
   return data;
 }
+
+//update
+export async function updateProduct(values: Product) {
+  const { data } = await axiosInstance.put(
+    `/api/products/${values.id}`,
+    values
+  );
+  return data;
+}
+
+//delete
+export async function deleteProduct(id: Product["id"]) {
+  const { data } = await axiosInstance.patch(`/api/products/${id}`);
+  return data;
+}

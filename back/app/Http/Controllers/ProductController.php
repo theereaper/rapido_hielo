@@ -29,7 +29,25 @@ class ProductController extends Controller
         ], 201);
     }
 
+    public function updateClient(CreateProductRequest $request, $id)
+    {
+        $item_exist = Product::where('id', $id)->exists();
 
+        if (!$item_exist) {
+            return response()->json(['message' => 'Producto no encontrado'], 404);
+        }
+
+        Product::where('id', $id)->update([
+            'name' =>  $request->get('name'),
+            'description' =>  $request->get('description'),
+            'weight' => $request->get('weight'),
+            'price' => $request->get('price'),
+        ]);
+
+        return response()->json([
+            'message' => "Producto editado con éxito",
+        ], 200);
+    }
 
     public function getProducts(Request $request)
     {
@@ -81,5 +99,21 @@ class ProductController extends Controller
         ];
 
         return response()->json($response, 200);
+    }
+
+    public function changeStatusProduct($id)
+    {
+        $client = Product::select('id', 'status')->where('id', $id)->first();
+
+        if (!$client) {
+            return response()->json(['message' => 'Producto no encontrado.'], 404);
+        }
+
+        // Determinar el nuevo estado
+        $new_status = ($client->status === 'active') ? 'desactive' : 'active';
+
+        $client->update(['status' => $new_status]);
+
+        return response()->json(['message' => 'Estado de producto actualizado correctamente'], 200);
     }
 }

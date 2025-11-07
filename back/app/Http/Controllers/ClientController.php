@@ -55,7 +55,7 @@ class ClientController extends Controller
         ]);
 
         return response()->json([
-            'message' => "Usuario editado con éxito",
+            'message' => "Cliente editado con éxito",
         ], 200);
     }
 

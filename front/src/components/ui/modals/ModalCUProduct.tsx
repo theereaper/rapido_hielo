@@ -17,7 +17,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { useCreateProduct } from "../../../services/products/mutation";
+import {
+  useCreateProduct,
+  useUpdateProduct,
+} from "../../../services/products/mutation";
 import { Product } from "../../../types/Product";
 
 export interface ModalCUProductRef {
@@ -60,11 +63,12 @@ export const ModalCUProduct = forwardRef<
       setId(id);
       setIsEdit(true);
 
-      /*       form.setFieldsValue({
+      form.setFieldsValue({
         name: data.name,
-        lastname: data.lastname,
-        email: data.email,
-      }); */
+        description: data.description,
+        weight: data.weight ? parseFloat(String(data.weight)) : undefined,
+        price: data.price,
+      });
     }
   };
 
@@ -81,7 +85,7 @@ export const ModalCUProduct = forwardRef<
   }, [open]);
 
   const createProductMutation = useCreateProduct();
-  /* const updateClientMutation = useUpdateClient(); */
+  const updateProductMutation = useUpdateProduct();
 
   const handleError = (error: any) => {
     console.log(error);
@@ -103,8 +107,6 @@ export const ModalCUProduct = forwardRef<
 
     const formValues = form.getFieldsValue();
 
-    console.log(formValues);
-
     createProductMutation.mutate(formValues as Product, {
       onSuccess: (data) => {
         messageApi.success(data.message);
@@ -123,7 +125,7 @@ export const ModalCUProduct = forwardRef<
   };
 
   const update = async () => {
-    /*     setIsLoadingButton(true);
+    setIsLoadingButton(true);
     setAlert({
       visible: false,
       description: "",
@@ -133,7 +135,7 @@ export const ModalCUProduct = forwardRef<
     formValues.id = id;
     formValues.key = id;
 
-    updateClientMutation.mutate(formValues as Client, {
+    updateProductMutation.mutate(formValues as Product, {
       onSuccess: (data) => {
         messageApi.success(data.message);
         if (props?.refetch) {
@@ -145,7 +147,7 @@ export const ModalCUProduct = forwardRef<
       onSettled: () => {
         setIsLoadingButton(false);
       },
-    }); */
+    });
   };
 
   return (
@@ -184,7 +186,6 @@ export const ModalCUProduct = forwardRef<
           <Form.Item name="weight" validateTrigger="onBlur" label="Peso">
             <InputNumber
               type="text"
-              disabled={isEdit && true}
               maxLength={8}
               className="w-full"
               controls={false}

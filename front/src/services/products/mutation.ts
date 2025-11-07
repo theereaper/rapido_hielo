@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateCacheAfterCreate } from "../../helpers/updateCacheMutation";
+import {
+  updateCacheAfterCreate,
+  updateCacheAfterUpdate,
+} from "../../helpers/updateCacheMutation";
 import { Product } from "../../types/Product";
-import { createProduct } from "./api";
+import { createProduct, deleteProduct, updateProduct } from "./api";
 
 export function useCreateProduct() {
   const queryClient = useQueryClient();
@@ -17,25 +20,24 @@ export function useCreateProduct() {
   });
 }
 
-/* export function useUpdateUser() {
+export function useUpdateProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (values: User) => updateUser(values),
+    mutationFn: (values: Product) => updateProduct(values),
     onSuccess: (_response, values) => {
-      updateCacheAfterUpdate(queryClient, ["users", undefined], values);
-    },
-  });
-} */
-
-/* export function useDeleteUser() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: User["id"]) => deleteUser(id),
-    onSuccess: (_response) => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      updateCacheAfterUpdate(queryClient, ["products", undefined], values);
     },
   });
 }
- */
+
+export function useDeleteProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: Product["id"]) => deleteProduct(id),
+    onSuccess: (_response) => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}

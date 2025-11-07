@@ -26,7 +26,7 @@ class CreateProductRequest extends FormRequest
         return [
             'name' =>  'required|string|min:4|max:20',
             'description' =>  'nullable|string|min:4|max:100',
-            'weight' => 'nullable|decimal:1',
+            'weight' => ['nullable', 'regex:/^\d+(\.\d{1})?$/'],
             'price' => 'required|int',
         ];
     }
