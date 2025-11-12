@@ -1,17 +1,20 @@
 <?php
 
-namespace App\Models\Cart;
+namespace App\Models\Order;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Ramsey\Uuid\Uuid as RamseyUuid;
 
-class Cart extends Model
+class Order extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'fk_client_id',
+        'number_order',
+        'total',
+        'total_quantity',
         'status'
     ];
 
@@ -25,11 +28,6 @@ class Cart extends Model
     ];
 
     public $incrementing = false;
-
-    public function items()
-    {
-        return $this->hasMany(\App\Models\Cart\CartItem::class, 'fk_cart_id', 'id');
-    }
 
     public static function boot()
     {

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartItemController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 
 Route::prefix('account')->controller(AccountController::class)->group(function () {
@@ -25,4 +26,8 @@ Route::prefix('carts')->controller(CartController::class)->group(function () {
 Route::prefix('carts/items')->controller(CartItemController::class)->group(function () {
     Route::put('/{id}', 'update');
     Route::delete('/{id}', 'destroy');
+});
+
+Route::prefix('orders')->controller(OrderController::class)->group(function () {
+    Route::post('/{cart_id}', 'store');
 });
