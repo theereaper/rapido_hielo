@@ -1,16 +1,18 @@
+import { axiosInstance } from "@/axios/axiosInstance";
 import { Cart, CartItem } from "@/types/Cart";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface CartState {
   cart: Cart | null;
-  cart_items: CartItem[];
+  cart_items: Partial<CartItem>[];
+  getCart: (client_id: string) => void;
   set_cart: (cart: Cart) => void;
-  add_item: (item: CartItem) => void;
-  remove_item: (id: string) => void;
+  add_item: (item: Partial<CartItem>, fk_client_id: string) => Promise<void>;
+  /*   remove_item: (id: string) => void;
   clear_cart: () => void;
   update_item_status: (id: string, status: "active" | "desactive") => void;
-  recalculate_totals: () => void;
+  recalculate_totals: () => void; */
 }
 
 export const useCartStore = create<CartState>()(
@@ -19,53 +21,58 @@ export const useCartStore = create<CartState>()(
       cart: null,
       cart_items: [],
 
+      getCart: async (client_id) => {
+        let { cart, cart_items } = get();
+        const data = await axiosInstance.get("api/carts", {
+          params: { client_id: client_id },
+        });
+        cart = data.data.cart;
+        set({ cart });
+      },
+
       set_cart: (cart) => set({ cart }),
 
-      add_item: (item) => {
-        const items = [...get().cart_items];
-        const exists = items.find((i) => i.id === item.id);
-        if (!exists) items.push(item);
-        const totals = calculate_totals(items);
-        set({
-          cart_items: items,
-          cart: get().cart
-            ? { ...get().cart!, ...totals }
-            : {
-                id: crypto.randomUUID(),
-                fk_client_id: item.fk_cart_id,
-                status: "active",
-                ...totals,
-                items: totals.items,
-              },
-        });
-      },
+      add_item: async (item, client_id) => {
+        let { cart, cart_items } = get();
 
-      remove_item: (id) => {
-        const items = get().cart_items.filter((i) => i.id !== id);
-        const totals = calculate_totals(items);
-        set({
-          cart_items: items,
-          cart: get().cart ? { ...get().cart!, ...totals } : null,
-        });
-      },
+        // 1. Buscar o crear carrito por cliente
+        if (!cart) {
+          const data = await axiosInstance.post("api/carts", {
+            fk_client_id: client_id,
+          });
 
-      update_item_status: (id, status) => {
-        const items = get().cart_items.map((i) =>
-          i.id === id ? { ...i, status } : i
+          cart = data.data.cart;
+          set({ cart });
+        }
+
+        // 2. Crear o actualizar ítem
+        const res_item = await axiosInstance.post("api/carts/items", {
+          fk_cart_id: cart.id,
+          fk_product_id: item.fk_product_id,
+          name_product: item.name_product,
+          price_product: item.price_product,
+          quantity: item.quantity,
+        });
+
+        console.log("no pasa");
+
+        const new_item = res_item.data.item;
+
+        // 3. Actualizar store local
+        const exists = cart_items.find(
+          (i) => i.fk_product_id === new_item.fk_product_id
         );
-        const totals = calculate_totals(items);
-        set({
-          cart_items: items,
-          cart: get().cart ? { ...get().cart!, ...totals } : null,
-        });
-      },
 
-      clear_cart: () => set({ cart: null, cart_items: [] }),
+        const updated_items = exists
+          ? cart_items.map((i) =>
+              i.fk_product_id === new_item.fk_product_id ? new_item : i
+            )
+          : [...cart_items, new_item];
 
-      recalculate_totals: () => {
-        const totals = calculate_totals(get().cart_items);
+        const totals = calculate_totals(updated_items);
         set({
-          cart: get().cart ? { ...get().cart!, ...totals } : null,
+          cart_items: updated_items,
+          cart: { ...cart, ...totals },
         });
       },
     }),

@@ -1,5 +1,8 @@
 import { Colors } from "@/constants/Colors";
+import { useAuthUser } from "@/store/useAuthUser";
+import { useCartStore } from "@/store/useCarts";
 import { useProducts } from "@/store/useProducts";
+import { CartItem } from "@/types/Cart";
 import { Product } from "@/types/Product";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
@@ -16,8 +19,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { IconButton, Portal } from "react-native-paper";
 import CustomButton from "./design/CustomButton";
 import CustomTextInput from "./design/CustomTextInput";
-import { useCartStore } from "@/store/useCarts";
-import { CartItem } from "@/types/Cart";
 
 type ChildFunction = (id?: Product["id"]) => void;
 
@@ -25,14 +26,13 @@ export interface ConfirmAddItemCartBSRef {
   childFunction: ChildFunction;
 }
 
-interface ConfirmAddItemCartBSProps {
-  onConfirm: () => void;
-}
+interface ConfirmAddItemCartBSProps {}
 
 export const ConfirmAddItemCartBS = forwardRef<
   ConfirmAddItemCartBSRef,
   ConfirmAddItemCartBSProps
 >((props, ref) => {
+  const { userLogged } = useAuthUser();
   const { products } = useProducts();
   const { add_item } = useCartStore();
 
@@ -40,8 +40,6 @@ export const ConfirmAddItemCartBS = forwardRef<
   const [product, setProduct] = useState<Product | null>(null);
 
   const sheetRef = useRef<BottomSheet>(null);
-
-  const { onConfirm } = props;
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -54,61 +52,19 @@ export const ConfirmAddItemCartBS = forwardRef<
     sheetRef.current?.snapToIndex(0);
   };
 
-  // dentro del componente
-
-  const handle_increase = () => {
-    set_quantity((prev) => Math.min(prev + 1, 99));
-  };
-
-  const handle_decrease = () => {
-    set_quantity((prev) => Math.max(prev - 1, 1));
-  };
-
-  const handle_quantity_change = (text: string) => {
-    const num = text.replace(/[^0-9]/g, "");
-    if (num.length > 2) return;
-    set_quantity(num === "" ? 0 : parseInt(num, 10));
-  };
-
-  const handleConfirm = useCallback(() => {
-    if (!product) return;
-
-    const item: CartItem = {
-      id: crypto.randomUUID(),
-      fk_cart_id: product.id, // o id del carrito si ya existe
-      fk_product_id: product.id,
-      name_product: product.name,
-      price_product: product.price * quantity,
-      quantity,
-      status: "active", // ✅ tipo literal correcto
-    };
-
-    add_item(item);
-    onConfirm();
-    close();
-  }, [product, quantity, add_item, onConfirm]);
-
-  const close = () => {
-    sheetRef.current?.close();
-  };
-
-  // expone funciones al padre
   useImperativeHandle(ref, () => ({
     childFunction,
     close,
   }));
 
+  // comportamiento bottomsheet
   const snapPoints = useMemo(() => ["40%"], []);
-
-  const handleSheetChange = useCallback((index) => {
-    console.log("handleSheetChange", index);
-  }, []);
 
   const handleSheetClose = useCallback(() => {
     setIsOpen(false); // también al cerrar por swipe
   }, []);
 
-  // 👇 Backdrop que solo aparece en el índice 0 (25%)
+  // 👇 Backdrop que solo aparece en el índice 0
   const renderBackdrop = useCallback(
     (props) => (
       <BottomSheetBackdrop
@@ -121,6 +77,41 @@ export const ConfirmAddItemCartBS = forwardRef<
     []
   );
 
+  const close = () => {
+    sheetRef.current?.close();
+    setProduct(null);
+  };
+
+  // Funciones carro
+  const handleIncrease = () => {
+    set_quantity((prev) => Math.min(prev + 1, 99));
+  };
+
+  const handleDecrease = () => {
+    set_quantity((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleQuantityChange = (text: string) => {
+    const num = text.replace(/[^0-9]/g, "");
+    if (num.length > 2) return;
+    const parsed = num === "" ? 1 : parseInt(num, 10);
+    set_quantity(parsed < 1 ? 1 : parsed);
+  };
+
+  const handleConfirm = useCallback(() => {
+    if (!product) return;
+
+    const item: Partial<CartItem> = {
+      fk_product_id: product?.id,
+      name_product: product?.name,
+      price_product: product?.price * quantity,
+      quantity,
+    };
+
+    add_item(item, userLogged.id);
+    close();
+  }, [product, quantity, add_item]);
+
   return (
     <Portal>
       {isOpen && (
@@ -131,17 +122,16 @@ export const ConfirmAddItemCartBS = forwardRef<
             ref={sheetRef}
             snapPoints={snapPoints}
             enableDynamicSizing={false}
-            onChange={handleSheetChange}
             onClose={handleSheetClose}
             enablePanDownToClose={true}
             backdropComponent={renderBackdrop} // 👈 usa la función personalizada
           >
             <View className="flex-1 justify-between p-6">
               <View className="flex flex-row justify-between">
-                <Text className="text-2xl font-bold mb-2">{product.name}</Text>
+                <Text className="text-2xl font-bold mb-2">{product?.name}</Text>
                 {
                   <Text className="text-xl font-semibold text-text-secondary">
-                    ${product.price} C/U
+                    ${product?.price} C/U
                   </Text>
                 }
               </View>
@@ -151,11 +141,11 @@ export const ConfirmAddItemCartBS = forwardRef<
                   icon={() => (
                     <Ionicons name="remove-circle" size={28} color="black" />
                   )}
-                  onPress={handle_decrease}
+                  onPress={handleDecrease}
                 />
                 <CustomTextInput
                   value={quantity.toString()}
-                  onChangeText={handle_quantity_change}
+                  onChangeText={handleQuantityChange}
                   keyboardType="numeric"
                   maxLength={2}
                   style={{ textAlign: "center", width: 60 }}
@@ -164,7 +154,7 @@ export const ConfirmAddItemCartBS = forwardRef<
                   icon={() => (
                     <Ionicons name="add-circle" size={28} color="black" />
                   )}
-                  onPress={handle_increase}
+                  onPress={handleIncrease}
                 />
               </View>
 
@@ -197,8 +187,6 @@ const styles = StyleSheet.create({
     flex: 1,
     inset: 0,
     zIndex: 9999,
-    position: "absolute",
-    paddingTop: 200,
   },
   contentContainer: {
     backgroundColor: "white",

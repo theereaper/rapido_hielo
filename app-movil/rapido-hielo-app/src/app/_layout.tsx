@@ -7,7 +7,6 @@ import { useLoadFonts } from "@/hooks/useLoadFonts";
 import { useAuthUser } from "@/store/useAuthUser";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
@@ -29,22 +28,10 @@ const queryClient = new QueryClient({
 });
 
 export default function Layout() {
-  const { isAuthenticated, isLoadingInitialData, getMe } = useAuthUser();
+  const { isAuthenticated, isLoadingInitialData } = useAuthUser();
   const { fontsLoaded } = useLoadFonts();
   useInitialData(); // Carga datos de usuario
   const insets = useSafeAreaInsets();
-
-/*   useEffect(() => {
-    const initAuth = async () => {
-      const token = await SecureStore.getItemAsync("token");
-      if (token) {
-        await getMe();
-      } else {
-        useAuthUser.setState({ isLoadingInitialData: false });
-      }
-    };
-    initAuth();
-  }, []); */
 
   useEffect(() => {
     if (fontsLoaded) {

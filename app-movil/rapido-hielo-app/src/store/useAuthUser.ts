@@ -15,7 +15,7 @@ interface AuthState {
 
 export const useAuthUser = create<AuthState>((set, get) => ({
   isAuthenticated: false,
-  isLoadingInitialData: true,
+  isLoadingInitialData: false,
   userLogged: null,
 
   login: async (email, password) => {
@@ -25,7 +25,7 @@ export const useAuthUser = create<AuthState>((set, get) => ({
         password,
       });
       await SecureStore.setItemAsync("token", data.token);
-      set({ userLogged: data.client, isAuthenticated: true });
+      set({ userLogged: data.user, isAuthenticated: true });
     } catch (error: any) {
       set({ isAuthenticated: false });
       const message =

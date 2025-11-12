@@ -10,7 +10,7 @@ interface Props {
 
 export default function CardProductList({ data, addItem }: Props) {
   return (
-    <ScrollView>
+    <ScrollView className="p-1">
       {data.map((product) => (
         <Card key={product.id} style={{ marginBottom: 12 }}>
           <Card.Cover

@@ -24,17 +24,14 @@ export default function index() {
   return (
     <>
       <SafeAreaView className="flex-1 justify-between bg-white">
-        <View className="flex-1 p-5">
+        <View className="flex-1 p-4">
           <CardProductList
             data={products}
             addItem={(value) => addItem(value)}
           />
         </View>
 
-        <ConfirmAddItemCartBS
-          ref={BottomSheetRef}
-          onConfirm={() => console.log("sasfsafas")}
-        />
+        <ConfirmAddItemCartBS ref={BottomSheetRef} />
       </SafeAreaView>
     </>
   );
