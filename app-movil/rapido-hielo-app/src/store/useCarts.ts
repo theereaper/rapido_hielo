@@ -1,87 +1,93 @@
-import { axiosInstance } from "@/axios/axiosInstance";
-import { Cart, CartItem } from "@/types/Cart";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { axiosInstance } from "../axios/axiosInstance";
+import { Cart, CartItem } from "@/types/Cart";
 
-interface CartState {
-  cart: Cart | null;
-  cart_items: Partial<CartItem>[];
-  getCart: (client_id: string) => void;
-  set_cart: (cart: Cart) => void;
-  add_item: (item: Partial<CartItem>, fk_client_id: string) => Promise<void>;
-  /*   remove_item: (id: string) => void;
-  clear_cart: () => void;
-  update_item_status: (id: string, status: "active" | "desactive") => void;
-  recalculate_totals: () => void; */
+interface CartStore {
+  cartUsed: Cart["id"];
+  items: CartItem[];
+  itemCount: number;
+  fetchCartItemCount: (client_id: string) => Promise<void>;
+  updateQuantity: (id: string, quantity_item: number) => Promise<void>;
+  removeItem: (id: string) => Promise<void>;
+  removeAllItems: (id: string) => Promise<void>;
+  setItemCount: (count: number) => void;
+  getTotalPrice: () => number;
 }
 
-export const useCartStore = create<CartState>()(
-  persist(
-    (set, get) => ({
-      cart: null,
-      cart_items: [],
+export const useCartStore = create<CartStore>((set, get) => ({
+  cartUsed: "",
+  items: [],
+  itemCount: 0,
 
-      getCart: async (client_id) => {
-        let { cart, cart_items } = get();
-        const data = await axiosInstance.get("api/carts", {
-          params: { client_id: client_id },
-        });
-        cart = data.data.cart;
-        set({ cart });
-      },
+  // Función para obtener el conteo del carrito
+  fetchCartItemCount: async (client_id: string) => {
+    try {
+      const response = await axiosInstance.get("/api/carts", {
+        params: { client_id },
+      });
 
-      set_cart: (cart) => set({ cart }),
+      const cart_items = (response.data.cart_items || []).map(
+        (item: CartItem) => ({
+          ...item,
+          quantity_item: item.quantity_item ?? 1,
+        })
+      );
 
-      add_item: async (item, client_id) => {
-        let { cart, cart_items } = get();
+      const total_items = cart_items.reduce(
+        (acc, i) => acc + i.quantity_item,
+        0
+      );
 
-        // 1. Buscar o crear carrito por cliente
-        if (!cart) {
-          const data = await axiosInstance.post("api/carts", {
-            fk_client_id: client_id,
-          });
+      set({
+        cartUsed: response.data.cart,
+        items: cart_items,
+        itemCount: total_items,
+      });
+    } catch (error) {
+      console.error("Error al obtener el número de ítems:", error);
+    }
+  },
 
-          cart = data.data.cart;
-          set({ cart });
-        }
+  updateQuantity: async (id, quantity_item) => {
+    try {
+      await axiosInstance.put(`/api/carts/items/${id}`, { quantity_item });
 
-        // 2. Crear o actualizar ítem
-        const res_item = await axiosInstance.post("api/carts/items", {
-          fk_cart_id: cart.id,
-          fk_product_id: item.fk_product_id,
-          name_product: item.name_product,
-          price_product: item.price_product,
-          quantity: item.quantity,
-        });
+      const updated_items = get().items.map((item) =>
+        item.id === id ? { ...item, quantity_item } : item
+      );
 
-        console.log("no pasa");
+      const total_items = updated_items.reduce(
+        (acc, i) => acc + i.quantity_item,
+        0
+      );
 
-        const new_item = res_item.data.item;
+      set({ items: updated_items, itemCount: total_items });
+    } catch (error) {
+      console.error("Error al actualizar cantidad:", error);
+    }
+  },
 
-        // 3. Actualizar store local
-        const exists = cart_items.find(
-          (i) => i.fk_product_id === new_item.fk_product_id
-        );
+  removeItem: async (id) => {
+    try {
+      await axiosInstance.delete(`/api/carts/items/${id}`);
+      const filtered = get().items.filter((i) => i.id !== id);
+      const total_items = filtered.reduce((acc, i) => acc + i.quantity_item, 0);
+      set({ items: filtered, itemCount: total_items });
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+    }
+  },
 
-        const updated_items = exists
-          ? cart_items.map((i) =>
-              i.fk_product_id === new_item.fk_product_id ? new_item : i
-            )
-          : [...cart_items, new_item];
+  removeAllItems: async (cart_id) => {
+    try {
+      await axiosInstance.delete(`api/carts/${cart_id}`);
+      set({ items: [], itemCount: 0 }); // limpia todo el estado local
+    } catch (error) {
+      console.error("Error al eliminar los productos:", error);
+    }
+  },
 
-        const totals = calculate_totals(updated_items);
-        set({
-          cart_items: updated_items,
-          cart: { ...cart, ...totals },
-        });
-      },
-    }),
-    { name: "cart-storage" }
-  )
-);
-
-function calculate_totals(items: CartItem[]) {
-  const active_items = items.filter((i) => i.status === "active");
-  const total = active_items.reduce((sum, i) => sum + i.price_product, 0);
-  return { total, items: active_items.length };
-}
+  setItemCount: (count) => set({ itemCount: count }),
+  getTotalPrice: () =>
+    get().items.reduce((acc, i) => acc + i.price_product * i.quantity_item, 0),
+}));

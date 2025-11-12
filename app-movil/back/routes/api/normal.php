@@ -16,10 +16,13 @@ Route::prefix('products')->controller(ProductController::class)->group(function 
     Route::get('/', 'show');
 });
 
-Route::prefix('carts/items')->controller(CartItemController::class)->group(function () {
-    Route::post('/', 'store');
+Route::prefix('carts')->controller(CartController::class)->group(function () {
+    Route::post('/{product_id}', 'addToCart');
+    Route::get('/', 'getCart');
+    Route::delete('/{cart_id}', 'deleteAllItems');
 });
 
-Route::prefix('carts')->controller(CartController::class)->group(function () {
-    Route::post('/', 'store');
+Route::prefix('carts/items')->controller(CartItemController::class)->group(function () {
+    Route::put('/{id}', 'update');
+    Route::delete('/{id}', 'destroy');
 });

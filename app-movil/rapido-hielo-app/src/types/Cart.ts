@@ -15,7 +15,7 @@ export interface CartItem {
   fk_cart_id: string;
   name_product: string;
   price_product: number;
-  quantity: number;
+  quantity_item: number;
   status: "active" | "desactive";
   created_at_show?: string;
 }

@@ -16,6 +16,7 @@ class CartItem extends Model
         'fk_cart_id',
         'name_product',
         'price_product',
+        'quantity_item'
     ];
 
     /**

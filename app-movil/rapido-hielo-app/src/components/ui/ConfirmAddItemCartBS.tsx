@@ -14,11 +14,12 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { IconButton, Portal } from "react-native-paper";
 import CustomButton from "./design/CustomButton";
 import CustomTextInput from "./design/CustomTextInput";
+import { axiosInstance } from "@/axios/axiosInstance";
 
 type ChildFunction = (id?: Product["id"]) => void;
 
@@ -34,7 +35,6 @@ export const ConfirmAddItemCartBS = forwardRef<
 >((props, ref) => {
   const { userLogged } = useAuthUser();
   const { products } = useProducts();
-  const { add_item } = useCartStore();
 
   const [quantity, set_quantity] = useState<number>(1);
   const [product, setProduct] = useState<Product | null>(null);
@@ -80,6 +80,7 @@ export const ConfirmAddItemCartBS = forwardRef<
   const close = () => {
     sheetRef.current?.close();
     setProduct(null);
+    set_quantity(1); // ← reinicia cantidad
   };
 
   // Funciones carro
@@ -98,19 +99,33 @@ export const ConfirmAddItemCartBS = forwardRef<
     set_quantity(parsed < 1 ? 1 : parsed);
   };
 
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     if (!product) return;
 
-    const item: Partial<CartItem> = {
-      fk_product_id: product?.id,
-      name_product: product?.name,
-      price_product: product?.price * quantity,
-      quantity,
-    };
+    try {
+      const payload = {
+        client_id: userLogged.id,
+        quantity,
+      };
 
-    add_item(item, userLogged.id);
+      const response = await axiosInstance.post(
+        `/api/carts/${product.id}`,
+        payload
+      );
+
+      // si la respuesta es correcta, actualizar contador
+      if (response.status === 200) {
+        const { fetchCartItemCount } = useCartStore.getState();
+        await fetchCartItemCount(userLogged.id);
+      }
+
+      Alert.alert("Éxito", "Producto agregado al carrito.");
+    } catch (error: any) {
+      console.error("Error al agregar producto:", error);
+      Alert.alert("Error", "No se pudo agregar el producto al carrito.");
+    }
     close();
-  }, [product, quantity, add_item]);
+  }, [product, quantity]);
 
   return (
     <Portal>
@@ -161,7 +176,7 @@ export const ConfirmAddItemCartBS = forwardRef<
               <View className="flex-col justify-end gap-4">
                 <CustomButton
                   style={{ backgroundColor: Colors.primary }}
-                  onPress={handleConfirm}
+                  onPress={() => handleConfirm()}
                 >
                   Agregar al carro
                 </CustomButton>

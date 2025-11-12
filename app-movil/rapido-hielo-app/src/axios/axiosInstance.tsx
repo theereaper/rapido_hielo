@@ -56,7 +56,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         // Llamamos al endpoint de refresh
-        const { data } = await axiosInstance.post("/api/auth/clients/refresh");
+        const { data } = await axiosInstance.post("/api/auth/refresh");
 
         await SecureStore.setItemAsync("token", data.access_token); // Guardamos el nuevo token
 
