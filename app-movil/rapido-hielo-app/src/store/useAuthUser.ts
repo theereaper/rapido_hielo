@@ -14,23 +14,18 @@ interface AuthState {
 }
 
 export const useAuthUser = create<AuthState>((set, get) => ({
-  isAuthenticated: !!SecureStore.getItem("token"),
-  isLoadingInitialData: false,
+  isAuthenticated: false,
+  isLoadingInitialData: true,
   userLogged: null,
 
   login: async (email, password) => {
     try {
-      const { data } = await axiosInstance.post("/api/auth/clients/login", {
+      const { data } = await axiosInstance.post("/api/auth/login", {
         email,
         password,
       });
-
       await SecureStore.setItemAsync("token", data.token);
-
-      set({
-        userLogged: data.client,
-        isAuthenticated: true,
-      });
+      set({ userLogged: data.client, isAuthenticated: true });
     } catch (error: any) {
       set({ isAuthenticated: false });
       const message =
@@ -42,8 +37,7 @@ export const useAuthUser = create<AuthState>((set, get) => ({
   getMe: async () => {
     set({ isLoadingInitialData: true });
     try {
-      const response = await axiosInstance.get(`/api/clients/me`);
-
+      const response = await axiosInstance.get("/api/me");
       set({
         userLogged: response.data,
         isAuthenticated: true,
@@ -57,11 +51,7 @@ export const useAuthUser = create<AuthState>((set, get) => ({
 
   logout: async () => {
     await SecureStore.deleteItemAsync("token");
-
-    set({
-      isAuthenticated: false,
-      userLogged: null,
-    });
+    set({ isAuthenticated: false, userLogged: null });
   },
 
   setUserLogged: (updatedData) => {

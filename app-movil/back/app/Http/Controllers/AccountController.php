@@ -28,7 +28,7 @@ class AccountController extends Controller
     {
         $user = Auth::user();
 
-        $user = User::select('id', 'name', 'lastname', 'email', 'role', 'status')
+        $user = User::select('id', 'rut', 'name', 'lastname', 'email', 'status')
             ->where('id', $user->id)
             ->firstOrFail();
 

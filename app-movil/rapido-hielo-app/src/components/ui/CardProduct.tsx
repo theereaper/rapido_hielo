@@ -5,11 +5,12 @@ import { Button, Card, Text } from "react-native-paper";
 
 interface Props {
   data: Product[];
+  addItem: (id: string) => void;
 }
 
-export default function CardProductList({ data }: Props) {
+export default function CardProductList({ data, addItem }: Props) {
   return (
-    <ScrollView className="p-10">
+    <ScrollView>
       {data.map((product) => (
         <Card key={product.id} style={{ marginBottom: 12 }}>
           <Card.Cover
@@ -32,7 +33,9 @@ export default function CardProductList({ data }: Props) {
             <Text variant="bodyMedium">{product.description}</Text>
           </Card.Content>
           <Card.Actions>
-            <Button mode="outlined">Agregar</Button>
+            <Button onPress={() => addItem(product.id)} mode="outlined">
+              Agregar
+            </Button>
           </Card.Actions>
         </Card>
       ))}
