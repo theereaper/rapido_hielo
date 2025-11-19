@@ -16,9 +16,14 @@ import useColumnSearch from "../../hooks/useColumnSearch";
 import { OrderWithClient } from "../../services/orders/api";
 import { useOrders } from "../../services/orders/queries";
 import { Order } from "../../types/Order";
+import {
+  ModalViewVaucher,
+  ModalViewVaucherRef,
+} from "../../components/ui/modals/ModalViewVaucher";
 
 export default function OrdersPrivate() {
   const modalVClientRef = useRef<ModalVClientRef>(null);
+  const modalVVaucher = useRef<ModalViewVaucherRef>(null);
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -89,13 +94,13 @@ export default function OrdersPrivate() {
               Pago pendiente
             </span>
           );
-        } else {
+        } else if (text === "pending_confirmation") {
           return (
             <span
               className="inline-flex items-center gap-x-1.5 py-1.5
-               px-3 rounded-full text-xs font-medium bg-red-100 text-red-500"
+               px-3 rounded-full text-xs font-medium bg-red-100 text-yellow-500"
             >
-              Cancelada
+              Pago por confirmar
             </span>
           );
         }
@@ -128,7 +133,7 @@ export default function OrdersPrivate() {
             items: [
               /* Usuarios */
               {
-                key: "214",
+                key: "1",
                 label: (
                   <button
                     className="flex items-center w-full gap-2 py-1"
@@ -144,10 +149,24 @@ export default function OrdersPrivate() {
                   </button>
                 ),
               },
-
+              /* Vaucher */
+              {
+                key: "2",
+                label: (
+                  <button
+                    className="flex items-center w-full gap-2 py-1"
+                    onClick={() => {
+                      modalVVaucher.current?.childFunction(id);
+                    }}
+                  >
+                    <ClientMoreIcon className="size-5 text-text-primary" />
+                    <span>Vaucher</span>
+                  </button>
+                ),
+              },
               /* mas info */
               {
-                key: "555332",
+                key: "3",
                 label: (
                   <button
                     className="flex items-center w-full gap-2 py-1"
@@ -200,6 +219,7 @@ export default function OrdersPrivate() {
       />
 
       <ModalVClient ref={modalVClientRef} />
+      <ModalViewVaucher ref={modalVVaucher} />
     </>
   );
 }

@@ -1,4 +1,3 @@
-import { axiosInstance } from "@/axios/axiosInstance";
 import { BackButtonNavegation } from "@/components/navegation/BackButtonNavegation";
 import CustomButton from "@/components/ui/design/CustomButton";
 import CustomTextInput from "@/components/ui/design/CustomTextInput";
@@ -8,10 +7,17 @@ import { useAuthUser } from "@/store/useAuthUser";
 import { useCartStore } from "@/store/useCarts";
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { Button, Card, IconButton } from "react-native-paper";
+import { Button, Card, IconButton, Menu } from "react-native-paper";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  ConfirmedCartBT,
+  ConfirmedCartBTRef,
+} from "@/components/ui/BottomSheets/Cart/ConfirmedCartBT";
+import { axiosInstance } from "@/axios/axiosInstance";
 
 export default function ModalCart() {
   const { userLogged } = useAuthUser();
@@ -24,6 +30,8 @@ export default function ModalCart() {
     removeItem,
     removeAllItems,
   } = useCartStore();
+
+  const BottomSheetRef = useRef<ConfirmedCartBTRef>(null);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -42,14 +50,29 @@ export default function ModalCart() {
 
   const totalPrice = useCartStore((state) => state.getTotalPrice());
 
-  const handleOrder = async () => {
+  const handleOrder = async ({ date, time, payment }) => {
     setIsLoading(true);
 
     try {
-      /* const response = await axiosInstance.post(`/api/orders/${cartUsed}`); */
-      const orderId = "d27958ab-4a4a-4b8a-88b0-70be38227b7d";
+      const payload = {
+        date_delivery: date,
+        hour_delivery: time,
+        method_payment: payment,
+      };
 
-      router.push(`/modal-confirm-payment?order_id=${orderId}`);
+      const response = await axiosInstance.post(
+        `/api/orders/${cartUsed}`,
+        payload
+      );
+
+      const orderId = response.data.order.id;
+
+      // Redirección según método de pago
+      if (payment === 2) {
+        router.push(`/modal-confirm-payment?order_id=${orderId}`);
+      } else {
+        router.push("/"); // home
+      }
     } catch (error) {
       console.error("Error al crear orden", error);
     } finally {
@@ -78,6 +101,71 @@ export default function ModalCart() {
             <Ionicons name="location-outline" size={28} color="black" />
             <Text className="text-xl font-semibold">{userLogged.address}</Text>
           </View>
+
+          {/* <View className="bg-white p-5 rounded-lg shadow shadow-black mb-5">
+            <Text className="text-xl font-semibold mb-4">
+              Programa tu despacho
+            </Text>
+
+            
+            <Text className="text-base font-semibold mb-1">Día de entrega</Text>
+
+            <Button
+              mode="outlined"
+              onPress={showDatePicker}
+              contentStyle={{ justifyContent: "space-between" }}
+              style={{ borderRadius: 8 }}
+              icon="calendar"
+            >
+              {selectedDate
+                ? selectedDate.toLocaleDateString("es-CL", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })
+                : "Selecciona un día"}
+            </Button>
+
+            <DateTimePickerModal
+              isVisible={isDatePickerVisible}
+              mode="date"
+              locale="es-CL"
+              onConfirm={handleConfirmDate}
+              onCancel={hideDatePicker}
+            />
+
+            
+            <Text className="text-base font-semibold mt-5 mb-1">
+              Horario de entrega
+            </Text>
+
+            <Menu
+              visible={timeMenuVisible}
+              onDismiss={() => setTimeMenuVisible(false)}
+              anchor={
+                <Button
+                  mode="outlined"
+                  onPress={() => setTimeMenuVisible(true)}
+                  contentStyle={{ justifyContent: "space-between" }}
+                  style={{ borderRadius: 8 }}
+                  icon="clock-outline"
+                >
+                  {selectedTime ?? "Selecciona un horario"}
+                </Button>
+              }
+            >
+              {availableHours.map((hour) => (
+                <Menu.Item
+                  key={hour}
+                  onPress={() => {
+                    setSelectedTime(hour);
+                    setTimeMenuVisible(false);
+                  }}
+                  title={hour}
+                />
+              ))}
+            </Menu>
+          </View> */}
 
           <ScrollView showsVerticalScrollIndicator={false}>
             {items.length === 0 ? (
@@ -163,7 +251,10 @@ export default function ModalCart() {
               Total ítems en carrito: {itemCount}
             </Text>
 
-            <CustomButton onPress={handleOrder} mode="contained">
+            <CustomButton
+              onPress={() => BottomSheetRef.current?.childFunction(0)}
+              mode="contained"
+            >
               Realizar pedido
             </CustomButton>
             <CustomButton
@@ -174,6 +265,15 @@ export default function ModalCart() {
               Eliminar productos
             </CustomButton>
           </View>
+
+          <ConfirmedCartBT
+            ref={BottomSheetRef}
+            title="Resumen de compra"
+            onConfirm={handleOrder}
+            items={items}
+            totalPrice={totalPrice}
+            itemCount={itemCount}
+          />
         </View>
       </SafeAreaView>
     </>

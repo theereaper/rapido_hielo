@@ -33,4 +33,5 @@ Route::prefix('products')->controller(ProductController::class)->group(function 
 Route::prefix('orders')->controller(OrderController::class)->group(function () {
     Route::get('/', 'index');
     Route::get('/items/{order_id}', 'showOrderItems');
+    Route::get('/url/{order_id}', 'showUrl');
 });

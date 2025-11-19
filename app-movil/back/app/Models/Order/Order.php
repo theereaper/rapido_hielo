@@ -16,6 +16,9 @@ class Order extends Model
         'total',
         'total_quantity',
         'url',
+        'date_delivery',
+        'hour_delivery',
+        'method_payment',
         'status'
     ];
 

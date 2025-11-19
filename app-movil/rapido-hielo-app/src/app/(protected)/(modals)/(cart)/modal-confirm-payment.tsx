@@ -52,9 +52,13 @@ david.alberto2212@gmail.com
         type: "image/jpeg",
       } as any);
 
-      await axiosInstance.post(`/api/orders/update/${order_id}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await axiosInstance.post(
+        `/api/orders/${order_id}/payment-proof`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
     } catch (error: any) {
       console.log("error al enviar comprobante", error.response);
     }

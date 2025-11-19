@@ -6,7 +6,6 @@ use App\Models\Order\Order;
 use App\Models\Order\OrderItem;
 use App\Traits\Filterable;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -46,6 +45,7 @@ class OrderController extends Controller
                 'number_order',
                 'total',
                 'total_quantity',
+                'url',
                 'status',
                 'created_at as created_at_show'
             ]);
@@ -122,5 +122,14 @@ class OrderController extends Controller
         ];
 
         return response()->json($response, 200);
+    }
+
+    public function showUrl($order_id)
+    {
+        $order = Order::select('id', 'url')->where('id', $order_id)->first();
+
+        return response()->json([
+            'order' => $order
+        ], 200);
     }
 }

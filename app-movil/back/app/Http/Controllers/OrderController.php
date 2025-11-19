@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-    public function store($cart_id)
+    public function store(Request $request, $cart_id)
     {
+        $date_delivery = $request->input('date_delivery');
         // Se obtiene el carrito con sus items
         $cart = Cart::with('items')->find($cart_id);
 
@@ -43,6 +44,9 @@ class OrderController extends Controller
                 'number_order' => $next_number,
                 'total' => $total,
                 'total_quantity' => $total_quantity,
+                'date_delivery' => $date_delivery ? date('Y-m-d', strtotime($date_delivery)) : null,
+                'hour_delivery' => $request->input('hour_delivery'),
+                'method_payment' => $request->input('method_payment'),
                 'status' => 'pending_payment',
             ]);
 
@@ -67,16 +71,17 @@ class OrderController extends Controller
                 'order' => $order,
                 'total_items' => $total_quantity,
             ], 201);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
+
             return response()->json([
                 'error' => 'Failed to create order',
-                'details' => $e->getMessage()
+                'details' => $e->__toString() // imprime TODO
             ], 500);
         }
     }
 
-    public function update(Request $request, $order_id)
+    public function submitPaymentProof(Request $request, $order_id)
     {
         $order = Order::find($order_id);
         if (!$order) {
@@ -87,6 +92,7 @@ class OrderController extends Controller
             $path = $request->file('image')->store('vauchers', 'public');
 
             $order->url = $path;
+            $order->status = 'payment_under_review';
         }
 
         $order->save();
