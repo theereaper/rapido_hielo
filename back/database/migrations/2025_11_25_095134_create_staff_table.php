@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('clients', function (Blueprint $table) {
-            $table->uuid('user_id')->primary();
-            $table->string('rut')->unique();
+        Schema::create('staff', function (Blueprint $table) {
+            $table->uuid('user_id')->primary(); // Usas el id del user como PK
             $table->string('name');
             $table->string('lastname');
-            $table->string('address');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('clients');
+        Schema::dropIfExists('staff');
     }
 };

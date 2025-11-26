@@ -11,21 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('carts', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('fk_client_id');
-            $table->integer('number_order');
             $table->string('status');
 
-            $table->string('status_dispatch')->default('pending');
-            $table->date('date_dispatch')->nullable();
-            $table->string('time_dispatch')->nullable();
-            $table->string('address_dispatch')->nullable();
-            $table->string('method_payment');
-            $table->string('vaucher');
-
-            $table->timestamps();
             $table->foreign('fk_client_id')->references('user_id')->on('clients');
+            $table->timestamps();
         });
     }
 
@@ -34,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('order');
+        Schema::dropIfExists('carts');
     }
 };
