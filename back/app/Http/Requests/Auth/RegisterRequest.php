@@ -24,11 +24,14 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'rut' => 'required_if:role,client|string|min:11|max:12|unique:clients,rut',
             'name' => 'required|string|min:2|max:25',
             'lastname' => 'required|string|min:2|max:25',
             'email' => 'required|email|max:' . config('limits.email_max_length') . '|unique:users,email',
+            'phone' => 'required|string|min:9|max:9|unique:users,phone',
             'password' => 'required|string|confirmed|min:8|max:20',
-            'role' => 'required|string|in:owner,admin,normal'
+            'address' => 'required_if:role,client|string|min:5|max:100',
+            'role' => 'required|string|in:owner,admin,normal,client'
         ];
     }
 

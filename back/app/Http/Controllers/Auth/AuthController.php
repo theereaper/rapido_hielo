@@ -5,29 +5,61 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\Client;
+use App\Models\Staff;
 use App\Models\User;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     public function register(RegisterRequest $request)
     {
-        // Creación del usuario
-        User::create([
-            'name' => $request->get('name'),
-            'lastname' => $request->get('lastname'),
-            'email' => $request->get('email'),
-            'password' => Hash::make($request->get('password')),
-            'role' => $request->get('role'),
-        ]);
+        DB::beginTransaction();
 
-        // Retornar respuesta (puede incluir token si usas Sanctum o JWT)
-        return response()->json([
-            'message' => 'Usuario registrado correctamente',
-        ], 201);
+        try {
+            // Crear usuario
+            $user = User::create([
+                'email' => $request->get('email'),
+                'phone' => $request->get('phone'),
+                'password' => Hash::make($request->get('password')),
+                'role' => $request->get('role'),
+            ]);
+
+            // Crear perfil según rol
+            if ($user->role === "client") {
+                Client::create([
+                    'user_id' => $user->id,
+                    'rut' => $request->get('rut'),
+                    'name' => $request->get('name'),
+                    'lastname' => $request->get('lastname'),
+                    'address' => $request->get('address'),
+                ]);
+            } else {
+                Staff::create([
+                    'user_id' => $user->id,
+                    'name' => $request->get('name'),
+                    'lastname' => $request->get('lastname'),
+                ]);
+            }
+
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Usuario registrado correctamente',
+            ], 201);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Error al registrar el usuario',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function login(LoginRequest $request)
@@ -54,16 +86,25 @@ class AuthController extends Controller
         // 🔹 Generar el token manualmente
         $token = JWTAuth::fromUser($user);
 
+        // Obtener perfil según rol
+        if ($user->role === 'client') {
+            $profile = $user->client;   // relación en User
+        } else {
+            $profile = $user->staff;    // relación en User
+        }
+
         return response()->json([
             'token' => $token,
             'user' => $user,
+            'profile' => $profile,
         ]);
     }
 
     public function logout()
     {
-        Auth::logout();
-        return response()->json(['message' => 'Successfully logged out']);
+        auth()->logout();
+
+        return response()->json(['message' => 'Sesión cerrada correctamente']);
     }
 
     public function refresh()

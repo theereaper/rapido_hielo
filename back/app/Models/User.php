@@ -18,9 +18,8 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'name',
-        'lastname',
         'email',
+        'phone',
         'password',
         'role',
         'status',
@@ -45,6 +44,16 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'id' => 'string',
     ];
+
+    public function client()
+    {
+        return $this->hasOne(Client::class, 'user_id');
+    }
+
+    public function staff()
+    {
+        return $this->hasOne(Staff::class, 'user_id');
+    }
 
     public function getJWTIdentifier()
     {

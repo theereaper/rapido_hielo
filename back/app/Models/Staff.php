@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Client extends Model
+class Staff extends Model
 {
     use HasFactory;
 
@@ -14,16 +14,15 @@ class Client extends Model
 
     protected $fillable = [
         'user_id',
-        'rut',
         'name',
         'lastname',
-        'address'
     ];
 
     protected $casts = [
         'user_id' => 'string',
     ];
 
+    // Relación 1:1 con User
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
