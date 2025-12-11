@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthClientController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\PasswordResetController;
 use Illuminate\Support\Facades\Route;
@@ -19,12 +18,6 @@ Route::get('/version', function () {
 | Registro y login de usuarios.
 */
 Route::prefix('auth')->controller(AuthController::class)->group(function () {
-    Route::post('/register', 'register');
-    Route::post('/login', 'login');
-    Route::post('/refresh', 'refresh');
-});
-
-Route::prefix('auth/clients')->controller(AuthClientController::class)->group(function () {
     Route::post('/register', 'register');
     Route::post('/login', 'login');
     Route::post('/refresh', 'refresh');

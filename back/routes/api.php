@@ -14,23 +14,16 @@ use Illuminate\Support\Facades\Route;
 
 require __DIR__ . '/api/public-routes.php';
 
-
-
-
 Route::middleware(['jwt.verify', 'user.active'])->group(function () {
     Route::get('/me', [AccountController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
 Route::group(['middleware' => ['jwt.verify', 'user.active']], function () {
+
     Route::prefix('users')->controller(UserController::class)->group(function () {
-        Route::post('/', 'createUser');
-        Route::put('/{id_user}', 'updateUser')->whereUuid('id_user');
-        Route::patch('/{id_user}', 'changeStatusUser')->whereUuid('id_user');
-        Route::get('/', 'getUsers');
         Route::put('/password', 'changePassword');
     });
-
 
     /**
      * --------------------------------------------------------

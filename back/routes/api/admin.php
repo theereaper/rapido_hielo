@@ -12,6 +12,7 @@ Route::prefix('users')->controller(UserController::class)->group(function () {
     Route::put('/{id_user}', 'updateUser')->whereUuid('id_user');
     Route::patch('/{id_user}', 'changeStatusUser')->whereUuid('id_user');
     Route::get('/', 'getUsers');
+    Route::get('/{id_user}', 'show');
     Route::put('/password', 'changePassword');
 });
 

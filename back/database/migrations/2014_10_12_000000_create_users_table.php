@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone')->unique();
             $table->string('password');
-            $table->enum('role', ['owner', 'admin', 'normal', 'client'])->default('admin');
+            $table->enum('role', ['owner', 'admin', 'normal', 'client'])->default('client');
             $table->string('status')->default('active');
             $table->string('reset_password_token')->nullable();
             $table->timestamp('reset_password_token_expiration')->nullable();

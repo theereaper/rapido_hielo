@@ -25,26 +25,17 @@ class AuthController extends Controller
                 'email' => $request->get('email'),
                 'phone' => $request->get('phone'),
                 'password' => Hash::make($request->get('password')),
-                'role' => $request->get('role'),
+                'role' => 'client',
             ]);
 
-            // Crear perfil según rol
-            if ($user->role === "client") {
-                Client::create([
-                    'user_id' => $user->id,
-                    'rut' => $request->get('rut'),
-                    'name' => $request->get('name'),
-                    'lastname' => $request->get('lastname'),
-                    'address' => $request->get('address'),
-                ]);
-            } else {
-                Staff::create([
-                    'user_id' => $user->id,
-                    'name' => $request->get('name'),
-                    'lastname' => $request->get('lastname'),
-                ]);
-            }
-
+            // Crear Perfil cliente
+            Client::create([
+                'user_id' => $user->id,
+                'rut' => $request->get('rut'),
+                'name' => $request->get('name'),
+                'lastname' => $request->get('lastname'),
+                'address' => $request->get('address'),
+            ]);
 
             DB::commit();
 
@@ -85,17 +76,11 @@ class AuthController extends Controller
         // 🔹 Generar el token manualmente
         $token = JWTAuth::fromUser($user);
 
-        // Obtener perfil según rol
-        if ($user->role === 'client') {
-            $profile = $user->client;   // relación en User
-        } else {
-            $profile = $user->staff;    // relación en User
-        }
+        $user->load($user->role === "client" ? 'client' : 'staff');
 
         return response()->json([
             'token' => $token,
             'user' => $user,
-            'profile' => $profile,
         ]);
     }
 

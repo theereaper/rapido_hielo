@@ -24,6 +24,12 @@ class Client extends Model
         'user_id' => 'string',
     ];
 
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
+    // Relación 1:1 con User
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
