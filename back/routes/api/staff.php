@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\ClientController;
-use App\Http\Controllers\DispatchController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Staff\ClientController;
+use App\Http\Controllers\Staff\DispatchController;
+use App\Http\Controllers\Staff\OrderController;
+use App\Http\Controllers\Staff\ProductController;
+use App\Http\Controllers\Staff\UserController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
 
 Route::prefix('users')->controller(UserController::class)->group(function () {
     Route::post('/', 'createUser');

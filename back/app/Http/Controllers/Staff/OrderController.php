@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Staff;
 
+use App\Http\Controllers\Controller;
 use App\Models\Order\Order;
 use App\Models\Order\OrderItem;
 use App\Traits\Filterable;

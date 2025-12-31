@@ -1,61 +1,64 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Staff;
 
-use App\Http\Requests\User\CreateUserRequest;
-use App\Http\Requests\User\UpdateUserRequest;
-use App\Models\User;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Client\CreateClientRequest;
+use App\Http\Requests\Client\UpdateClientRequest;
+use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Traits\Filterable;
 
-class UserController extends Controller
+class ClientController extends Controller
 {
     use Filterable;
 
-    public function createUser(CreateUserRequest $request)
+    public function createClient(CreateClientRequest $request)
     {
         $password = Str::random(8);
 
-        $user = User::create([
+        $client = Client::create([
+            'rut' => $request->get('rut'),
             'name' =>  $request->get('name'),
             'lastname' =>  $request->get('lastname'),
             'email' => $request->get('email'),
             'password' => Hash::make($password),
-            'role' => $request->get('role'),
+            'address' => $request->get('address'),
         ]);
 
-        $user->key = $user->id;
-        $user->status = "active";
+        $client->key = $client->id;
+        $client->status = "active";
 
         return response()->json([
-            'message' => "Usuario creado con éxito",
-            'register' => $user,
+            'message' => "Cliente creado con éxito",
+            'register' => $client,
         ], 201);
     }
 
-    public function updateUser(UpdateUserRequest $request, $id)
+    public function updateClient(UpdateClientRequest $request, $id)
     {
-        $item_exist = User::where('id', $id)->exists();
+        $item_exist = Client::where('id', $id)->exists();
 
         if (!$item_exist) {
-            return response()->json(['message' => 'Usuario no encontrado'], 404);
+            return response()->json(['message' => 'Cliente no encontrado'], 404);
         }
 
-        User::where('id', $id)->update([
+        Client::where('id', $id)->update([
+            'rut' => $request->input('rut'),
             'name' => $request->input('name'),
             'lastname' => $request->input('lastname'),
             'email' => $request->input('email'),
-            'role' => $request->input('role'),
+            'address' => $request->input('address'),
         ]);
 
         return response()->json([
-            'message' => "Usuario editado con éxito",
+            'message' => "Cliente editado con éxito",
         ], 200);
     }
 
-    public function getUsers(Request $request)
+    public function getClients(Request $request)
     {
         $request->validate([
             'current' => 'nullable|integer|min:1',
@@ -63,7 +66,7 @@ class UserController extends Controller
             'order' => 'nullable|in:asc,desc',
         ]);
 
-        $allowed_filters = ['name', 'lastname', 'role', 'status', 'email'];
+        $allowed_filters = ['rut', 'name', 'lastname', 'role', 'status', 'email'];
 
         if ($request->filled('filters')) {
             foreach (array_keys($request->filters) as $key) {
@@ -81,19 +84,20 @@ class UserController extends Controller
         $order = $request->get('order', 'desc');
         $filters = $request->get('filters', []);
 
-        $query = User::query()
+        $query = Client::query()
             ->select([
                 'id',
                 'id as key',
+                'rut',
                 'name',
                 'email',
                 'lastname',
-                'role',
+                'address',
                 'status',
                 'created_at as created_at_show'
             ]);
 
-        $this->applyInFilters($query, $filters, ['role', 'status']); // Aplicar filtros whereIn de forma dinámica
+        $this->applyInFilters($query, $filters, ['rut', 'status']); // Aplicar filtros whereIn de forma dinámica
         $this->applyLikeFilters($query, $filters, ['name', 'lastname', 'email']); // Aplicar filtros LIKE de forma dinámica
 
         $paginated_data = $query->orderBy($field, $order)
@@ -107,19 +111,30 @@ class UserController extends Controller
         return response()->json($response, 200);
     }
 
-    public function changeStatusUser($id)
+    public function show(Request $request, $id)
     {
-        $user = User::select('id', 'status')->where('id', $id)->first();
 
-        if (!$user) {
+        $client = Client::select('rut', 'name', 'lastname', 'email', 'address')
+            ->where('id', $id)
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        return response()->json($client, 200);
+    }
+
+    public function changeStatusClient($id)
+    {
+        $client = Client::select('id', 'status')->where('id', $id)->first();
+
+        if (!$client) {
             return response()->json(['message' => 'Usuario no encontrado.'], 404);
         }
 
         // Determinar el nuevo estado
-        $new_status = ($user->status === 'active') ? 'desactive' : 'active';
+        $new_status = ($client->status === 'active') ? 'desactive' : 'active';
 
-        $user->update(['status' => $new_status]);
+        $client->update(['status' => $new_status]);
 
-        return response()->json(['message' => 'Estado de usuario actualizado correctamente'], 200);
+        return response()->json(['message' => 'Estado de cliente actualizado correctamente'], 200);
     }
 }

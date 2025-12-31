@@ -16,7 +16,7 @@ return new class extends Migration
 
             $table->string('name');
             $table->text('description')->nullable();
-            $table->string('image')->nullable();
+            $table->string('url_image')->nullable();
 
             $table->decimal('weight', 8, 2)->nullable();
             $table->string('unit')->default('kg');

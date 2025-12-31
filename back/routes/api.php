@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -15,15 +14,9 @@ use Illuminate\Support\Facades\Route;
 require __DIR__ . '/api/public-routes.php';
 
 Route::middleware(['jwt.verify', 'user.active'])->group(function () {
+
     Route::get('/me', [AccountController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
-});
-
-Route::group(['middleware' => ['jwt.verify', 'user.active']], function () {
-
-    Route::prefix('users')->controller(UserController::class)->group(function () {
-        Route::put('/password', 'changePassword');
-    });
 
     /**
      * --------------------------------------------------------
@@ -31,7 +24,7 @@ Route::group(['middleware' => ['jwt.verify', 'user.active']], function () {
      * --------------------------------------------------------
      */
     Route::group(['middleware' => ['user.admin']], function () {
-        require __DIR__ . '/api/admin.php';
+        require __DIR__ . '/api/staff.php';
     });
 
     /**

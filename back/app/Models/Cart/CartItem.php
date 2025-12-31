@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Models\Cart;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Ramsey\Uuid\Uuid as RamseyUuid;
+
+
+class CartItem extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'fk_product_id',
+        'fk_cart_id',
+        'name_product',
+        'price_product',
+        'quantity_item'
+    ];
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'id' => 'string',
+    ];
+
+    public $incrementing = false;
+
+    public static function boot()
+    {
+        parent::boot();
+        static::creating(function ($obj) {
+            $obj->id = RamseyUuid::uuid4()->toString();
+        });
+    }
+}

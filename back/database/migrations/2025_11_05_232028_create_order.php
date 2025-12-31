@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('time_dispatch')->nullable();
             $table->string('address_dispatch')->nullable();
             $table->string('method_payment');
-            $table->string('vaucher');
+            $table->longText('url_vaucher');
 
             $table->timestamps();
             $table->foreign('fk_client_id')->references('user_id')->on('clients');
